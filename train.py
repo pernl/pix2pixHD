@@ -1,4 +1,4 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
+### Copyright (C) 2017 NVIDIA Corporation. All rights reserved.
 ### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import time
 from collections import OrderedDict
@@ -19,8 +19,8 @@ if opt.continue_train:
         start_epoch, epoch_iter = np.loadtxt(iter_path , delimiter=',', dtype=int)
     except:
         start_epoch, epoch_iter = 1, 0
-    print('Resuming from epoch %d at iteration %d' % (start_epoch, epoch_iter))        
-else:    
+    print('Resuming from epoch %d at iteration %d' % (start_epoch, epoch_iter))
+else:
     start_epoch, epoch_iter = 1, 0
 
 if opt.debug:
@@ -38,7 +38,7 @@ print('#training images = %d' % dataset_size)
 model = create_model(opt)
 visualizer = Visualizer(opt)
 
-total_steps = (start_epoch-1) * dataset_size + epoch_iter    
+total_steps = (start_epoch-1) * dataset_size + epoch_iter
 for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
     epoch_start_time = time.time()
     if epoch != start_epoch:
@@ -52,7 +52,7 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
         save_fake = total_steps % opt.display_freq == 0
 
         ############## Forward Pass ######################
-        losses, generated = model(Variable(data['label']), Variable(data['inst']), 
+        losses, generated = model(Variable(data['label']), Variable(data['inst']),
             Variable(data['image']), Variable(data['feat']), infer=save_fake)
 
         # sum per device losses
@@ -61,7 +61,7 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
 
         # calculate final loss scalar
         loss_D = (loss_dict['D_fake'] + loss_dict['D_real']) * 0.5
-        loss_G = loss_dict['G_GAN'] + loss_dict['G_GAN_Feat'] + loss_dict['G_VGG']
+        loss_G = loss_dict['G_GAN'] + loss_dict['G_GAN_Feat'] + loss_dict['G_VGG'] + loss_dict['feedback']
 
         ############### Backward Pass ####################
         # update generator weights
@@ -74,7 +74,7 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
         loss_D.backward()
         model.module.optimizer_D.step()
 
-        #call(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"]) 
+        #call(["nvidia-smi", "--format=csv", "--query-gpu=memory.used,memory.free"])
 
         ############## Display results and errors ##########
         ### print out errors
@@ -94,17 +94,17 @@ for epoch in range(start_epoch, opt.niter + opt.niter_decay + 1):
         ### save latest model
         if total_steps % opt.save_latest_freq == 0:
             print('saving the latest model (epoch %d, total_steps %d)' % (epoch, total_steps))
-            model.module.save('latest')            
+            model.module.save('latest')
             np.savetxt(iter_path, (epoch, epoch_iter), delimiter=',', fmt='%d')
-       
-    # end of epoch 
+
+    # end of epoch
     iter_end_time = time.time()
     print('End of epoch %d / %d \t Time Taken: %d sec' %
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
 
     ### save model for this epoch
     if epoch % opt.save_epoch_freq == 0:
-        print('saving the model at the end of epoch %d, iters %d' % (epoch, total_steps))        
+        print('saving the model at the end of epoch %d, iters %d' % (epoch, total_steps))
         model.module.save('latest')
         model.module.save(epoch)
         np.savetxt(iter_path, (epoch+1, 0), delimiter=',', fmt='%d')
