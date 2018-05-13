@@ -13,4 +13,5 @@ class TestOptions(BaseOptions):
         self.parser.add_argument('--how_many', type=int, default=50, help='how many test images to run')
         self.parser.add_argument('--cluster_path', type=str, default='features_clustered_010.npy', help='the path for clustered results of encoded features')
         self.parser.add_argument('--output_labels', type=int, default=0, help='If labels should be outputted or not')
+        self.parser.add_argument('--report_style', type=int, default=0, help='Generate for report')
         self.isTrain = False

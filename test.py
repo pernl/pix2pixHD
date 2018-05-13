@@ -8,6 +8,7 @@ from models.models import create_model
 import util.util as util
 from util.visualizer import Visualizer
 from util import html
+import numpy as np
 
 opt = TestOptions().parse(save=False)
 opt.nThreads = 1   # test code only supports nThreads = 1
@@ -30,6 +31,11 @@ for i, data in enumerate(dataset):
     if opt.output_labels:
         visuals = OrderedDict([('_input_label', util.tensor2label(data['label'][0], opt.label_nc)),
                                ('img', util.tensor2im(generated.data[0]))])
+    elif opt.report_style:
+        labels = util.tensor2label(data['label'][0], opt.label_nc)
+        gen_im = util.tensor2im(generated.data[0])
+        conc = np.concatenate((labels, gen_im), axis=1)
+        visuals = OrderedDict([('conc', conc)])
     else:
         visuals = OrderedDict([('img', util.tensor2im(generated.data[0]))])
     img_path = data['path']
